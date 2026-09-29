@@ -1,11 +1,24 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore.js";
+import { apiClient } from "../lib/apiClient.js";
 import "./Navbar.css";
 
 export function Navbar() {
-  const { accessToken, clearAuth } = useAuthStore();
+  const { accessToken, user, clearAuth } = useAuthStore();
   const location = useLocation();
+  const navigate = useNavigate();
   const isLoggedIn = Boolean(accessToken);
+
+  async function handleLogout() {
+    try {
+      await apiClient.post("/api/auth/logout");
+    } catch {
+      // ignore errors — clear local state regardless
+    } finally {
+      clearAuth();
+      navigate("/login", { replace: true });
+    }
+  }
 
   return (
     <nav className="navbar glass" role="navigation" aria-label="Main navigation">
@@ -28,10 +41,13 @@ export function Navbar() {
               >
                 Gallery
               </Link>
+              {user && (
+                <span className="navbar-user badge badge-gold">{user.name}</span>
+              )}
               <button
                 id="logout-btn"
                 className="btn btn-ghost navbar-link"
-                onClick={clearAuth}
+                onClick={handleLogout}
                 type="button"
               >
                 Log out

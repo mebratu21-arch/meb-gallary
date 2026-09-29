@@ -1,20 +1,18 @@
 import { PrismaClient } from "@prisma/client";
-import { logger } from "./logger.js";
 
+// Use a simple PrismaClient without strict event logging to avoid
+// complex type interactions with exactOptionalPropertyTypes.
+// Errors will surface via Express error handler / pino-http middleware.
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
 export const prisma =
   globalForPrisma.prisma ??
   new PrismaClient({
-    log: [
-      { emit: "event", level: "query" },
-      { emit: "event", level: "error" },
-      { emit: "event", level: "warn" },
-    ],
+    log:
+      process.env["NODE_ENV"] === "production"
+        ? ["error", "warn"]
+        : ["error", "warn"],
   });
-
-prisma.$on("error", (e) => logger.error(e, "Prisma error"));
-prisma.$on("warn", (e) => logger.warn(e, "Prisma warning"));
 
 if (process.env["NODE_ENV"] !== "production") {
   globalForPrisma.prisma = prisma;

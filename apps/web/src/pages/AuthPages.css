@@ -86,3 +86,14 @@
   font-size: var(--text-sm);
   color: var(--text-muted);
 }
+
+/* ── Error banner ─────────────────────────────────────── */
+.auth-error {
+  padding: var(--space-3) var(--space-4);
+  background: rgba(224, 92, 92, 0.1);
+  border: 1px solid rgba(224, 92, 92, 0.35);
+  border-radius: var(--radius-md);
+  color: var(--color-error);
+  font-size: var(--text-sm);
+  animation: fadeIn var(--transition-normal) forwards;
+}

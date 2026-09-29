@@ -1,10 +1,10 @@
-import { describe, it, expect, vi, beforeAll, afterAll } from "vitest";
+import { describe, it, expect, vi, beforeAll } from "vitest";
 import request from "supertest";
-import { buildApp } from "../../app.js";
+import { buildApp } from "../app.js";
 import type { Express } from "express";
 
 // Mock Prisma and Redis so tests don't need live services for health checks
-vi.mock("../../lib/prisma.js", () => ({
+vi.mock("../lib/prisma.js", () => ({
   prisma: {
     $queryRaw: vi.fn().mockResolvedValue([{ "?column?": 1 }]),
     $on: vi.fn(),
@@ -12,7 +12,7 @@ vi.mock("../../lib/prisma.js", () => ({
   },
 }));
 
-vi.mock("../../lib/redis.js", () => ({
+vi.mock("../lib/redis.js", () => ({
   redis: {
     ping: vi.fn().mockResolvedValue("PONG"),
     connect: vi.fn(),
@@ -47,7 +47,7 @@ describe("GET /ready", () => {
   });
 
   it("returns 503 when DB is down", async () => {
-    const { prisma } = await import("../../lib/prisma.js");
+    const { prisma } = await import("../lib/prisma.js");
     vi.mocked(prisma.$queryRaw).mockRejectedValueOnce(new Error("Connection refused"));
 
     const res = await request(app).get("/ready");

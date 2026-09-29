@@ -1,10 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
-import { LoginPage } from "../../pages/LoginPage.js";
-import { RegisterPage } from "../../pages/RegisterPage.js";
-import { ProtectedRoute } from "../../components/ProtectedRoute.js";
-import { useAuthStore } from "../../store/authStore.js";
+import { LoginPage } from "../pages/LoginPage";
+import { RegisterPage } from "../pages/RegisterPage";
+import { ProtectedRoute } from "../components/ProtectedRoute";
+import { useAuthStore } from "../store/authStore";
 
 describe("LoginPage", () => {
   it("renders the login form with required fields", () => {

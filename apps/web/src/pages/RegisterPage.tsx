@@ -1,7 +1,49 @@
-import { Link } from "react-router-dom";
+import { useState, type FormEvent } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuthStore } from "../store/authStore.js";
+import { apiClient } from "../lib/apiClient.js";
+import type { AuthResponse } from "@meb-gallery/shared";
 import "./AuthPages.css";
 
 export function RegisterPage() {
+  const navigate = useNavigate();
+  const { setAuth } = useAuthStore();
+
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setFieldErrors({});
+    setLoading(true);
+
+    try {
+      const { data } = await apiClient.post<AuthResponse>("/api/auth/register", {
+        name,
+        email,
+        password,
+      });
+      setAuth(data.accessToken, data.user);
+      navigate("/gallery", { replace: true });
+    } catch (err: unknown) {
+      const errData = (
+        err as { response?: { data?: { error?: { message?: string; details?: Record<string, string[]> } } } }
+      )?.response?.data?.error;
+      if (errData?.details) {
+        setFieldErrors(errData.details);
+      } else {
+        setError(errData?.message ?? "Registration failed. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <main className="page auth-page">
       <div className="auth-container">
@@ -15,44 +57,71 @@ export function RegisterPage() {
             <p className="auth-subtitle">Join thousands of creators</p>
           </div>
 
+          {/* Error banner */}
+          {error && (
+            <div className="auth-error" role="alert" id="register-error">
+              {error}
+            </div>
+          )}
+
           {/* Form */}
-          <form className="auth-form" id="register-form" aria-label="Registration form">
+          <form className="auth-form" id="register-form" aria-label="Registration form" onSubmit={handleSubmit}>
             <div className="form-group">
               <label htmlFor="register-name" className="form-label">Full name</label>
               <input
                 id="register-name"
                 type="text"
-                className="input"
+                className={`input ${fieldErrors["name"] ? "error" : ""}`}
                 placeholder="Jane Doe"
                 autoComplete="name"
                 required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
               />
+              {fieldErrors["name"] && (
+                <span className="form-error">{fieldErrors["name"][0]}</span>
+              )}
             </div>
             <div className="form-group">
               <label htmlFor="register-email" className="form-label">Email</label>
               <input
                 id="register-email"
                 type="email"
-                className="input"
+                className={`input ${fieldErrors["email"] ? "error" : ""}`}
                 placeholder="you@example.com"
                 autoComplete="email"
                 required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
+              {fieldErrors["email"] && (
+                <span className="form-error">{fieldErrors["email"][0]}</span>
+              )}
             </div>
             <div className="form-group">
               <label htmlFor="register-password" className="form-label">Password</label>
               <input
                 id="register-password"
                 type="password"
-                className="input"
+                className={`input ${fieldErrors["password"] ? "error" : ""}`}
                 placeholder="At least 10 characters"
                 autoComplete="new-password"
                 minLength={10}
                 required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
               />
+              {fieldErrors["password"] && (
+                <span className="form-error">{fieldErrors["password"][0]}</span>
+              )}
             </div>
-            <button id="register-submit-btn" type="submit" className="btn btn-primary auth-submit">
-              Create account
+            <button
+              id="register-submit-btn"
+              type="submit"
+              className="btn btn-primary auth-submit"
+              disabled={loading}
+            >
+              {loading ? <span className="spinner" /> : "Create account"}
             </button>
           </form>
 

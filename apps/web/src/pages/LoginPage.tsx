@@ -1,7 +1,41 @@
-import { Link } from "react-router-dom";
+import { useState, type FormEvent } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useAuthStore } from "../store/authStore.js";
+import { apiClient } from "../lib/apiClient.js";
+import type { AuthResponse } from "@meb-gallery/shared";
 import "./AuthPages.css";
 
 export function LoginPage() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { setAuth } = useAuthStore();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const from = (location.state as { from?: { pathname: string } })?.from?.pathname ?? "/gallery";
+
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+
+    try {
+      const { data } = await apiClient.post<AuthResponse>("/api/auth/login", { email, password });
+      setAuth(data.accessToken, data.user);
+      navigate(from, { replace: true });
+    } catch (err: unknown) {
+      const message =
+        (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error
+          ?.message ?? "Login failed. Please try again.";
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <main className="page auth-page">
       <div className="auth-container">
@@ -15,8 +49,15 @@ export function LoginPage() {
             <p className="auth-subtitle">Sign in to your gallery</p>
           </div>
 
-          {/* Form — Phase 1 will add real logic */}
-          <form className="auth-form" id="login-form" aria-label="Login form">
+          {/* Error banner */}
+          {error && (
+            <div className="auth-error" role="alert" id="login-error">
+              {error}
+            </div>
+          )}
+
+          {/* Form */}
+          <form className="auth-form" id="login-form" aria-label="Login form" onSubmit={handleSubmit}>
             <div className="form-group">
               <label htmlFor="login-email" className="form-label">Email</label>
               <input
@@ -26,6 +67,8 @@ export function LoginPage() {
                 placeholder="you@example.com"
                 autoComplete="email"
                 required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div className="form-group">
@@ -37,10 +80,17 @@ export function LoginPage() {
                 placeholder="••••••••••"
                 autoComplete="current-password"
                 required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
               />
             </div>
-            <button id="login-submit-btn" type="submit" className="btn btn-primary auth-submit">
-              Sign in
+            <button
+              id="login-submit-btn"
+              type="submit"
+              className="btn btn-primary auth-submit"
+              disabled={loading}
+            >
+              {loading ? <span className="spinner" /> : "Sign in"}
             </button>
           </form>
 

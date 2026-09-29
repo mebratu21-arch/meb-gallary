@@ -69,3 +69,12 @@
 .navbar-link.active {
   color: var(--gold);
 }
+
+.navbar-user {
+  font-size: var(--text-xs);
+  font-family: var(--font-sans);
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

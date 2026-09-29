@@ -44,3 +44,11 @@ prisma/migrations/**/dev.db
 # Misc
 .cache/
 .turbo/
+
+# Dev-only Neon setup scripts (generated during initial DB bootstrap)
+# Comment out the next line if you want to keep them in version control
+# apps/api/apply-schema-neon.mjs
+# apps/api/seed-neon.mjs
+
+# Accidental Prisma duplicate — real schema lives at /prisma/
+apps/api/prisma/
