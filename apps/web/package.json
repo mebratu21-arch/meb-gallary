@@ -20,8 +20,8 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.27.0",
-    "zustand": "^5.0.0",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "zustand": "^5.0.0"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.5.0",
@@ -30,6 +30,7 @@
     "@types/react": "^18.3.11",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.2",
+    "happy-dom": "^20.14.5",
     "jsdom": "^25.0.1",
     "typescript": "^5.5.4",
     "vite": "^5.4.8",

@@ -19,6 +19,11 @@ enum Role {
   ADMIN
 }
 
+enum ImageSource {
+  upload
+  ai_generated
+}
+
 // ─────────────────────────────────────────────
 // Models
 // ─────────────────────────────────────────────
@@ -29,12 +34,16 @@ model User {
   passwordHash String?
   googleId     String?   @unique
   name         String
+  avatar       String?   // Cloudinary URL for profile picture
   role         Role      @default(USER)
   createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
   deletedAt    DateTime?
 
   refreshTokens RefreshToken[]
   auditLogs     AuditLog[]
+  images        Image[]
+  albums        Album[]
 }
 
 model RefreshToken {
@@ -60,4 +69,60 @@ model AuditLog {
   createdAt DateTime @default(now())
 
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+}
+
+model Image {
+  id               String      @id @default(uuid())
+  userId           String
+  publicId         String      @unique   // Cloudinary public_id
+  url              String                // Cloudinary secure_url (HTTPS CDN)
+  format           String                // jpeg | png | webp
+  width            Int
+  height           Int
+  bytes            Int                   // file size in bytes
+  title            String      @default("")
+  description      String      @default("")
+  tags             String[]              // user-supplied tags
+  source           ImageSource @default(upload)
+  isFavorite       Boolean     @default(false)
+  isModerated      Boolean     @default(false)
+  aiCaption        String?               // GPT-4o Vision description
+  aiCategory       String?               // AI-classified category
+  aiTags           String[]              // AI-generated tags
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  albumImages AlbumImage[]
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([isFavorite])
+  @@index([source])
+}
+
+model Album {
+  id           String   @id @default(uuid())
+  userId       String
+  name         String
+  description  String   @default("")
+  coverImageId String?               // optional cover image URL
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  albumImages AlbumImage[]
+
+  @@index([userId])
+}
+
+model AlbumImage {
+  albumId   String
+  imageId   String
+  addedAt   DateTime @default(now())
+
+  album Album @relation(fields: [albumId], references: [id], onDelete: Cascade)
+  image Image @relation(fields: [imageId], references: [id], onDelete: Cascade)
+
+  @@id([albumId, imageId])
 }

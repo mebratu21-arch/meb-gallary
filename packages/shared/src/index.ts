@@ -13,3 +13,13 @@ export {
   type AuthUser,
   type AuthResponse,
 } from "./schemas/auth.js";
+
+// ── Image schemas & types ─────────────────────────────────────────────────────
+export {
+  imageSchema,
+  uploadImageResponseSchema,
+  listImagesResponseSchema,
+  type ImageDto,
+  type UploadImageResponse,
+  type ListImagesResponse,
+} from "./schemas/image.js";

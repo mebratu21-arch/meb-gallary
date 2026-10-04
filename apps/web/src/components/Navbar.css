@@ -1,3 +1,5 @@
+/* ── Navbar ────────────────────────────────────────────────────────────────── */
+
 .navbar {
   position: fixed;
   top: 0;
@@ -9,55 +11,54 @@
 }
 
 .navbar-inner {
-  height: 100%;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  height: 100%;
+  gap: var(--space-6);
 }
 
+/* ── Brand ─────────────────────────────────────────────────────────────────── */
 .navbar-brand {
   display: flex;
   align-items: center;
   gap: var(--space-2);
   text-decoration: none;
-  color: var(--text-primary);
+  flex-shrink: 0;
 }
 
 .navbar-logo {
+  font-size: 1.4rem;
   color: var(--gold);
-  font-size: var(--text-xl);
-  animation: pulse 3s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  filter: drop-shadow(0 0 6px var(--gold));
 }
 
 .navbar-title {
   font-family: var(--font-serif);
   font-size: var(--text-xl);
+  color: var(--text-primary);
   font-weight: 600;
-  letter-spacing: 0.02em;
 }
 
+/* ── Links ─────────────────────────────────────────────────────────────────── */
 .navbar-links {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-2);
+  margin-left: auto;
 }
 
 .navbar-link {
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
-  text-decoration: none;
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  text-decoration: none;
   transition: color var(--transition-fast), background var(--transition-fast);
-  background: none;
+  background: transparent;
   border: none;
-  font-family: var(--font-sans);
   cursor: pointer;
+  font-family: var(--font-sans);
+  white-space: nowrap;
 }
 
 .navbar-link:hover,
@@ -70,11 +71,71 @@
   color: var(--gold);
 }
 
-.navbar-user {
-  font-size: var(--text-xs);
+/* ── Avatar circle ─────────────────────────────────────────────────────────── */
+.navbar-avatar {
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  background: var(--gold-glow) !important;
+  border: 1px solid var(--gold) !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.navbar-avatar-icon {
+  color: var(--gold-bright);
+  font-weight: 700;
+  font-size: var(--text-sm);
+}
+
+/* ── Hamburger (mobile) ─────────────────────────────────────────────────────── */
+.navbar-hamburger {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 1.3rem;
+  cursor: pointer;
+  padding: var(--space-2);
+  margin-left: auto;
+}
+
+/* ── Mobile menu ────────────────────────────────────────────────────────────── */
+.navbar-mobile-menu {
+  position: fixed;
+  top: var(--nav-height);
+  left: 0;
+  right: 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  z-index: 99;
+  animation: fadeIn 0.15s ease;
+}
+
+.navbar-mobile-link {
+  padding: var(--space-4) var(--space-6);
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: var(--text-sm);
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
   font-family: var(--font-sans);
-  max-width: 140px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  border-bottom: 1px solid var(--border);
+  transition: color var(--transition-fast), background var(--transition-fast);
+}
+
+.navbar-mobile-link:hover {
+  color: var(--text-primary);
+  background: var(--bg-elevated);
+}
+
+@media (max-width: 768px) {
+  .navbar-links { display: none; }
+  .navbar-hamburger { display: block; }
 }

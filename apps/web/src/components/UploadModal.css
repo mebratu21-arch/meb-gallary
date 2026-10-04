@@ -1,0 +1,143 @@
+/* ─── Modal backdrop ───────────────────────────────────────────────────────── */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: var(--space-4);
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ─── Modal card ────────────────────────────────────────────────────────────── */
+.modal-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-hover);
+  border-radius: var(--radius-xl, 1rem);
+  width: 100%;
+  max-width: 480px;
+  padding: var(--space-8);
+  box-shadow: 0 0 60px rgba(201, 168, 76, 0.15);
+}
+
+/* ─── Header ────────────────────────────────────────────────────────────────── */
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-6);
+}
+
+.modal-header h2 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm, 0.25rem);
+  transition: color var(--transition-fast, 0.15s);
+}
+.modal-close:hover { color: var(--text-primary); }
+
+/* ─── Drop zone ─────────────────────────────────────────────────────────────── */
+.drop-zone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-lg, 0.75rem);
+  padding: var(--space-8);
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  background: var(--bg-elevated);
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+
+.drop-zone:hover,
+.drop-zone--active {
+  border-color: var(--gold);
+  background: var(--gold-glow);
+}
+
+.drop-zone__placeholder {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  color: var(--text-secondary);
+  pointer-events: none;
+}
+
+.drop-zone__icon {
+  font-size: 2.5rem;
+  margin-bottom: var(--space-2);
+}
+
+.drop-zone__hint {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.drop-zone__preview {
+  max-width: 100%;
+  max-height: 260px;
+  border-radius: var(--radius-md, 0.5rem);
+  object-fit: contain;
+}
+
+/* ─── Fields ─────────────────────────────────────────────────────────────────── */
+.modal-fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+}
+
+.field-label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.field-optional {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+/* ─── Messages ───────────────────────────────────────────────────────────────── */
+.modal-error {
+  margin-top: var(--space-3);
+  color: var(--color-error);
+  font-size: 0.85rem;
+}
+
+.modal-success {
+  margin-top: var(--space-3);
+  color: var(--color-success);
+  font-size: 0.85rem;
+}
+
+/* ─── Actions ───────────────────────────────────────────────────────────────── */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+}

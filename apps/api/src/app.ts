@@ -9,6 +9,10 @@ import { env } from "./config/env.js";
 import { logger } from "./lib/logger.js";
 import { healthRouter } from "./routes/health.js";
 import { authRouter } from "./routes/auth.js";
+import { imagesRouter } from "./routes/images.js";
+import { albumsRouter } from "./routes/albums.js";
+import { aiRouter } from "./routes/ai.js";
+import { adminRouter } from "./routes/admin.js";
 
 export function buildApp(): Express {
   const app = express();
@@ -57,6 +61,10 @@ export function buildApp(): Express {
   // ── Routes ────────────────────────────────────────────────────────────────
   app.use("/", healthRouter);
   app.use("/api/auth", authRouter);
+  app.use("/api/images", imagesRouter);
+  app.use("/api/albums", albumsRouter);
+  app.use("/api/ai", aiRouter);
+  app.use("/api/admin", adminRouter);
 
   // ── 404 handler ──────────────────────────────────────────────────────────
   app.use((_req: Request, res: Response) => {
