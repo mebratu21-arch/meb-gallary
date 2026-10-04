@@ -6,27 +6,28 @@ import { RegisterPage } from "../pages/RegisterPage";
 import { ProtectedRoute } from "../components/ProtectedRoute";
 import { useAuthStore } from "../store/authStore";
 
+
 describe("LoginPage", () => {
   it("renders the login form with required fields", () => {
     render(<MemoryRouter><LoginPage /></MemoryRouter>);
-    expect(screen.getByRole("main")).toBeInTheDocument();
-    expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /sign in/i })).toBeInTheDocument();
+    expect(screen.getByRole("main")).toBeDefined();
+    expect(screen.getByLabelText(/email/i)).toBeDefined();
+    expect(screen.getByLabelText(/password/i)).toBeDefined();
+    expect(screen.getByRole("button", { name: /sign in/i })).toBeDefined();
   });
 
   it("shows a link to the register page", () => {
     render(<MemoryRouter><LoginPage /></MemoryRouter>);
-    expect(screen.getByRole("link", { name: /create one/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /create one/i })).toBeDefined();
   });
 });
 
 describe("RegisterPage", () => {
   it("renders the registration form with required fields", () => {
     render(<MemoryRouter><RegisterPage /></MemoryRouter>);
-    expect(screen.getByLabelText(/full name/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/full name/i)).toBeDefined();
+    expect(screen.getByLabelText(/email/i)).toBeDefined();
+    expect(screen.getByLabelText(/password/i)).toBeDefined();
   });
 });
 
@@ -40,7 +41,7 @@ describe("ProtectedRoute", () => {
         </ProtectedRoute>
       </MemoryRouter>,
     );
-    expect(screen.queryByText("Secret content")).not.toBeInTheDocument();
+    expect(screen.queryByText("Secret content")).toBeNull();
   });
 
   it("renders children when authenticated", () => {
@@ -52,7 +53,7 @@ describe("ProtectedRoute", () => {
         </ProtectedRoute>
       </MemoryRouter>,
     );
-    expect(screen.getByText("Secret content")).toBeInTheDocument();
+    expect(screen.getByText("Secret content")).toBeDefined();
     // Reset
     useAuthStore.setState({ accessToken: null });
   });
