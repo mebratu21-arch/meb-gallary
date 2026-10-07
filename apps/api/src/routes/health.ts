@@ -11,7 +11,7 @@ healthRouter.get("/health", (_req: Request, res: Response) => {
 
 /** GET /ready — checks DB and Redis connectivity */
 healthRouter.get("/ready", async (_req: Request, res: Response) => {
-  const checks: Record<string, "ok" | "error"> = {};
+  const checks: Record<string, "ok" | "error" | "memory_fallback"> = {};
 
   try {
     await prisma.$queryRaw`SELECT 1`;
@@ -22,12 +22,14 @@ healthRouter.get("/ready", async (_req: Request, res: Response) => {
 
   try {
     await redis.ping();
-    checks["redis"] = "ok";
+    checks["redis"] = redis.usesInMemoryFallback ? "memory_fallback" : "ok";
   } catch {
     checks["redis"] = "error";
   }
 
-  const allOk = Object.values(checks).every((v) => v === "ok");
+  const allOk =
+    checks["database"] === "ok" &&
+    (checks["redis"] === "ok" || checks["redis"] === "memory_fallback");
   res.status(allOk ? 200 : 503).json({
     status: allOk ? "ready" : "degraded",
     checks,

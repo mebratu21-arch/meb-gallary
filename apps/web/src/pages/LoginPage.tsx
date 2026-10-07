@@ -1,8 +1,8 @@
-import { useState, type FormEvent } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "../store/authStore.js";
 import { apiClient } from "../lib/apiClient.js";
-import type { AuthResponse } from "@meb-gallery/shared";
+import type { AuthResponse, AuthUser } from "@meb-gallery/shared";
 import "./AuthPages.css";
 
 export function LoginPage() {
@@ -16,6 +16,36 @@ export function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   const from = (location.state as { from?: { pathname: string } })?.from?.pathname ?? "/gallery";
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const errParam = params.get("error");
+    const tokenParam = params.get("token");
+
+    if (errParam) {
+      setError(decodeURIComponent(errParam));
+    } else if (tokenParam) {
+      setLoading(true);
+      apiClient
+        .get<{ user: AuthUser }>("/api/auth/me", {
+          headers: { Authorization: `Bearer ${tokenParam}` },
+        })
+        .then(({ data }) => {
+          setAuth(tokenParam, data.user);
+          navigate(from, { replace: true });
+        })
+        .catch(() => {
+          setError("Failed to complete Google login. Please try again.");
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    }
+  }, [location.search, from, navigate, setAuth]);
+
+  function handleGoogleLogin() {
+    window.location.href = "/api/auth/google";
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -102,7 +132,12 @@ export function LoginPage() {
           </div>
 
           {/* OAuth */}
-          <button id="google-login-btn" className="btn btn-ghost auth-oauth" type="button">
+          <button
+            id="google-login-btn"
+            className="btn btn-ghost auth-oauth"
+            type="button"
+            onClick={handleGoogleLogin}
+          >
             <GoogleIcon />
             Continue with Google
           </button>

@@ -41,36 +41,39 @@ if (!DATABASE_URL) { console.error("DATABASE_URL missing"); process.exit(1); }
 
 const sql = neon(DATABASE_URL);
 
-// Pre-computed argon2id hashes for the default seed passwords.
-// AdminPassword123!  →  hash below
-// DemoPassword123!   →  hash below
-// These are only used for local dev — override in production.
-const ADMIN_HASH = "$argon2id$v=19$m=65536,t=3,p=1$YWRtaW5zYWx0YWRtaW5zYWx0$NfXDnCvLWJH8EbvgwBfJ1mXGb0Y1TtCz7sQtv0WGZGQ";
-const DEMO_HASH  = "$argon2id$v=19$m=65536,t=3,p=1$ZGVtb3NhbHRkZW1vc2FsdA$QjHn7bHNWEMsHbEkH2g3mzQMVnKj0Kh5KXS1mj9XVUA";
+import argon2 from "argon2";
 
-// NOTE: The pre-computed hashes above are placeholder values for seeding.
-// The actual API will verify passwords correctly because argon2.hash() in
-// the real seed.ts generates proper hashes. These placeholder hashes won't
-// verify correctly — use the real seed once Prisma/Node 20 is available.
-// For now we insert a clearly-marked placeholder and print instructions.
+const adminPassword = getEnv("SEED_ADMIN_PASSWORD", "AdminPassword123!");
+const demoPassword  = getEnv("SEED_DEMO_PASSWORD", "DemoPassword123!");
 
-console.log("🌱 Seeding Neon database...\n");
+const ARGON2_OPTIONS = {
+  type: argon2.argon2id,
+  memoryCost: 65536,
+  parallelism: 1,
+  timeCost: 3,
+};
 
-async function upsertUser(email, name, role, note) {
-  // Check if user exists
+const adminHash = await argon2.hash(adminPassword, ARGON2_OPTIONS);
+const demoHash  = await argon2.hash(demoPassword, ARGON2_OPTIONS);
+
+console.log("🌱 Seeding Neon database with real argon2 hashes...\n");
+
+async function upsertUser(email, name, role, hash) {
   const existing = await sql.query(
     `SELECT id FROM "User" WHERE email = '${email.replace(/'/g, "''")}'`,
   );
 
-  if (existing.rows.length > 0) {
-    console.log(`  ⏭️  ${role} ${email} — already exists (${existing.rows[0].id})`);
-    return existing.rows[0].id;
+  const rows = Array.isArray(existing) ? existing : existing.rows;
+  if (rows && rows.length > 0) {
+    const id = rows[0].id;
+    await sql.query(
+      `UPDATE "User" SET "passwordHash" = '${hash}', "name" = '${name}', "role" = '${role}' WHERE id = '${id}'`,
+    );
+    console.log(`  ✅ Updated ${role.padEnd(5)} ${email} (${id}) with real password hash`);
+    return id;
   }
 
   const id = randomUUID();
-  // Insert with placeholder hash — will be replaced when running real seed
-  const hash = role === "ADMIN" ? ADMIN_HASH : DEMO_HASH;
-
   await sql.query(
     `INSERT INTO "User" ("id","email","passwordHash","name","role")
      VALUES ('${id}','${email.replace(/'/g, "''")}','${hash}','${name}','${role}')`,
@@ -80,8 +83,8 @@ async function upsertUser(email, name, role, note) {
   return id;
 }
 
-await upsertUser(adminEmail, "Admin", "ADMIN");
-await upsertUser(demoEmail,  "Demo User", "USER");
+await upsertUser(adminEmail, "Admin", "ADMIN", adminHash);
+await upsertUser(demoEmail,  "Demo User", "USER", demoHash);
 
 console.log(`
 ✨ Seed complete!

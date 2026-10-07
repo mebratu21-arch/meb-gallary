@@ -1,18 +1,10 @@
 /**
- * redis.ts — Redis client with graceful in-memory fallback for local dev.
- *
- * WHY: On Windows without Docker, Redis (port 6379) is often not available.
- * The fallback uses a Map<string, { value: string; expiresAt: number | null }>
- * that mimics the `get`, `set`, `ping`, and `quit` methods used in this app.
- * In production (Render, Railway, etc.) REDIS_URL points to a real Redis server,
- * so the real client is used automatically.
+ * redis.ts — Redis client with in-memory fallback for local dev only.
  */
 
 import { createClient, type RedisClientType } from "redis";
 import { logger } from "./logger.js";
 import { env } from "../config/env.js";
-
-// ── In-memory fallback ────────────────────────────────────────────────────────
 
 type CacheEntry = { value: string; expiresAt: number | null };
 
@@ -20,7 +12,7 @@ class InMemoryRedis {
   private store = new Map<string, CacheEntry>();
 
   async connect(): Promise<void> {
-    logger.warn("⚠️  Redis unavailable — using in-memory cache (NOT suitable for production)");
+    logger.warn("⚠️  Redis unavailable — using in-memory cache (development only)");
   }
 
   async ping(): Promise<string> {
@@ -52,8 +44,6 @@ class InMemoryRedis {
   }
 }
 
-// ── Real Redis client factory ─────────────────────────────────────────────────
-
 type AppRedis = {
   connect(): Promise<void>;
   ping(): Promise<string>;
@@ -63,54 +53,63 @@ type AppRedis = {
   on(event: string, handler: (...args: unknown[]) => void): unknown;
 };
 
-async function createRedisClient(): Promise<AppRedis> {
+async function createRedisClient(): Promise<{ client: AppRedis; inMemory: boolean }> {
   try {
-    // Try to connect with a 3-second timeout to detect Redis availability fast.
     const client = createClient({
       url: env.REDIS_URL,
       socket: {
         connectTimeout: 3000,
-        reconnectStrategy: false, // Disable auto-reconnect so we can fall back quickly
+        reconnectStrategy: false,
       },
     }) as RedisClientType;
 
     client.on("error", () => {
-      /* suppress — we handle connection errors via try/catch below */
+      /* handled via try/catch on connect */
     });
 
     await client.connect();
     logger.info("✅ Redis connected");
 
-    // Re-attach proper error handler after successful connect
     client.on("error", (err) => logger.error({ err }, "Redis client error"));
 
-    return client as unknown as AppRedis;
-  } catch {
+    return { client: client as unknown as AppRedis, inMemory: false };
+  } catch (err) {
+    if (env.NODE_ENV === "production") {
+      logger.error({ err, url: env.REDIS_URL }, "Redis connection failed in production");
+      throw new Error("Redis is required in production but connection failed.");
+    }
     logger.warn({ url: env.REDIS_URL }, "Redis connection failed — using in-memory fallback");
-    return new InMemoryRedis();
+    return { client: new InMemoryRedis(), inMemory: true };
   }
 }
 
-// We export a lazy-initialised promise so server.ts can `await redis.connect()`
-// and the module stays compatible with the existing code that imports `redis`.
-
 class LazyRedis implements AppRedis {
   private inner: AppRedis | null = null;
+  private _usesInMemoryFallback = false;
+
+  get usesInMemoryFallback(): boolean {
+    return this._usesInMemoryFallback;
+  }
 
   async connect(): Promise<void> {
-    this.inner = await createRedisClient();
+    const { client, inMemory } = await createRedisClient();
+    this.inner = client;
+    this._usesInMemoryFallback = inMemory;
   }
 
   async ping(): Promise<string> {
-    return this.inner?.ping() ?? "PONG";
+    if (!this.inner) throw new Error("Redis not connected");
+    return this.inner.ping();
   }
 
   async get(key: string): Promise<string | null> {
-    return this.inner?.get(key) ?? null;
+    if (!this.inner) return null;
+    return this.inner.get(key);
   }
 
   async set(key: string, value: string, opts?: { EX?: number }): Promise<string | null> {
-    return this.inner?.set(key, value, opts) ?? "OK";
+    if (!this.inner) return "OK";
+    return this.inner.set(key, value, opts);
   }
 
   async quit(): Promise<void> {

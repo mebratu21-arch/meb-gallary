@@ -13,9 +13,14 @@ import { imagesRouter } from "./routes/images.js";
 import { albumsRouter } from "./routes/albums.js";
 import { aiRouter } from "./routes/ai.js";
 import { adminRouter } from "./routes/admin.js";
+import { authRateLimiter, aiRateLimiter } from "./middleware/rateLimit.js";
 
 export function buildApp(): Express {
   const app = express();
+
+  if (env.NODE_ENV === "production") {
+    app.set("trust proxy", 1);
+  }
 
   // ── Security headers ──────────────────────────────────────────────────────
   app.use(helmet());
@@ -60,10 +65,10 @@ export function buildApp(): Express {
 
   // ── Routes ────────────────────────────────────────────────────────────────
   app.use("/", healthRouter);
-  app.use("/api/auth", authRouter);
+  app.use("/api/auth", authRateLimiter, authRouter);
   app.use("/api/images", imagesRouter);
   app.use("/api/albums", albumsRouter);
-  app.use("/api/ai", aiRouter);
+  app.use("/api/ai", aiRateLimiter, aiRouter);
   app.use("/api/admin", adminRouter);
 
   // ── 404 handler ──────────────────────────────────────────────────────────

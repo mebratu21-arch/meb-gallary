@@ -50,17 +50,21 @@ CREATE UNIQUE INDEX IF NOT EXISTS "User_email_key" ON "User"("email");
 CREATE UNIQUE INDEX IF NOT EXISTS "User_googleId_key" ON "User"("googleId");
 
 CREATE TABLE IF NOT EXISTS "RefreshToken" (
-  "id"        TEXT         NOT NULL DEFAULT gen_random_uuid()::text,
-  "userId"    TEXT         NOT NULL,
-  "tokenHash" TEXT         NOT NULL,
-  "familyId"  TEXT         NOT NULL,
-  "expiresAt" TIMESTAMP(3) NOT NULL,
-  "revokedAt" TIMESTAMP(3),
-  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "id"          TEXT         NOT NULL DEFAULT gen_random_uuid()::text,
+  "userId"      TEXT         NOT NULL,
+  "tokenHash"   TEXT         NOT NULL,
+  "tokenLookup" TEXT,
+  "familyId"    TEXT         NOT NULL,
+  "expiresAt"   TIMESTAMP(3) NOT NULL,
+  "revokedAt"   TIMESTAMP(3),
+  "createdAt"   TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT "RefreshToken_pkey" PRIMARY KEY ("id")
 );
 
+ALTER TABLE "RefreshToken" ADD COLUMN IF NOT EXISTS "tokenLookup" TEXT;
+
 CREATE UNIQUE INDEX IF NOT EXISTS "RefreshToken_tokenHash_key" ON "RefreshToken"("tokenHash");
+CREATE UNIQUE INDEX IF NOT EXISTS "RefreshToken_tokenLookup_key" ON "RefreshToken"("tokenLookup");
 CREATE INDEX IF NOT EXISTS "RefreshToken_userId_idx"   ON "RefreshToken"("userId");
 CREATE INDEX IF NOT EXISTS "RefreshToken_familyId_idx" ON "RefreshToken"("familyId");
 

@@ -1,11 +1,12 @@
-import { useState, useCallback } from "react";
-import { useImages, useUploadImage } from "../store/imageHooks.js";
+import { useState, useCallback, useMemo } from "react";
+import { useImages } from "../store/imageHooks.js";
 import { apiClient } from "../lib/apiClient.js";
 import { ImageCard, type ImageDto } from "../components/ImageCard.js";
 import { UploadModal } from "../components/UploadModal.js";
 import { Lightbox } from "../components/Lightbox.js";
 import { useQueryClient } from "@tanstack/react-query";
 import { imageKeys } from "../store/imageHooks.js";
+import { DEMO_IMAGES } from "../data/demoImages.js";
 import "./GalleryPage.css";
 
 type FilterTab = "all" | "favorites" | "ai_generated";
@@ -18,6 +19,14 @@ export function GalleryPage() {
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [page, setPage] = useState(1);
+
+  // ── Local demo favorites state ───────────────────────────────────────────
+  const [demoFavorites, setDemoFavorites] = useState<Record<string, boolean>>({
+    "demo-mountains": true,
+    "demo-ocean": true,
+    "demo-rose": true,
+    "demo-forest": true,
+  });
 
   // ── Modal state ───────────────────────────────────────────────────────────
   const [showUpload, setShowUpload] = useState(false);
@@ -37,14 +46,41 @@ export function GalleryPage() {
 
   const { data, isLoading, isError } = useImages(queryParams);
 
-  // Derive displayed images from API result, applying client-side filter for tab/search
-  // (Server handles it properly; this is just for type-checking)
-  const images: ImageDto[] = (data?.images as ImageDto[] | undefined) ?? [];
-  const total = data?.total ?? 0;
-  const pages = data?.pages ?? 1;
+  // User uploaded images from API
+  const apiImages: ImageDto[] = (data?.images as ImageDto[] | undefined) ?? [];
+  const isUsingDemo = !isLoading && (isError || apiImages.length === 0);
+
+  // Filtered demo images when using demo showcase
+  const displayImages: ImageDto[] = useMemo(() => {
+    if (!isUsingDemo) return apiImages;
+
+    return DEMO_IMAGES.map((img) => ({
+      ...img,
+      isFavorite: demoFavorites[img.id] ?? img.isFavorite,
+    })).filter((img) => {
+      if (tab === "favorites" && !img.isFavorite) return false;
+      if (tab === "ai_generated" && img.source !== "ai_generated" && !img.aiCaption) return false;
+      if (search) {
+        const q = search.toLowerCase();
+        const matchesTitle = img.title.toLowerCase().includes(q);
+        const matchesDesc = img.description.toLowerCase().includes(q);
+        const matchesTags = img.tags.some((t) => t.toLowerCase().includes(q));
+        const matchesAi = img.aiCaption?.toLowerCase().includes(q);
+        if (!matchesTitle && !matchesDesc && !matchesTags && !matchesAi) return false;
+      }
+      return true;
+    });
+  }, [isUsingDemo, apiImages, demoFavorites, tab, search]);
+
+  const total = isUsingDemo ? displayImages.length : data?.total ?? 0;
+  const pages = isUsingDemo ? 1 : data?.pages ?? 1;
 
   // ── Favorite toggle ───────────────────────────────────────────────────────
   const handleFavoriteToggle = useCallback(async (id: string) => {
+    if (id.startsWith("demo-")) {
+      setDemoFavorites((prev) => ({ ...prev, [id]: !prev[id] }));
+      return;
+    }
     try {
       await apiClient.patch(`/api/images/${id}/favorite`);
       void qc.invalidateQueries({ queryKey: imageKeys.all });
@@ -55,7 +91,7 @@ export function GalleryPage() {
 
   // ── Lightbox navigation ───────────────────────────────────────────────────
   const openLightbox = (image: ImageDto) => {
-    const idx = images.findIndex((img) => img.id === image.id);
+    const idx = displayImages.findIndex((img) => img.id === image.id);
     setLightboxIdx(idx);
     setLightboxImage(image);
   };
@@ -64,12 +100,12 @@ export function GalleryPage() {
 
   const lightboxPrev = () => {
     const newIdx = lightboxIdx - 1;
-    if (newIdx >= 0) { setLightboxIdx(newIdx); setLightboxImage(images[newIdx]!); }
+    if (newIdx >= 0) { setLightboxIdx(newIdx); setLightboxImage(displayImages[newIdx]!); }
   };
 
   const lightboxNext = () => {
     const newIdx = lightboxIdx + 1;
-    if (newIdx < images.length) { setLightboxIdx(newIdx); setLightboxImage(images[newIdx]!); }
+    if (newIdx < displayImages.length) { setLightboxIdx(newIdx); setLightboxImage(displayImages[newIdx]!); }
   };
 
   // ── Search submit ─────────────────────────────────────────────────────────
@@ -91,16 +127,53 @@ export function GalleryPage() {
       <div className="gallery-header container">
         <div className="gallery-header__left">
           <h1 className="gold-text gallery-title">Meb Gallery</h1>
-          <p className="gallery-subtitle">{total} images</p>
+          <p className="gallery-subtitle">
+            {isUsingDemo ? "Showcase Collection • 6 Sample Masterpieces" : `${total} images`}
+          </p>
         </div>
         <button
           id="upload-btn"
           className="btn btn-primary"
           onClick={() => setShowUpload(true)}
         >
-          + Upload
+          + Upload Photo
         </button>
       </div>
+
+      {/* ── Demo Mode Banner ──────────────────────────────────────────────── */}
+      {isUsingDemo && (
+        <div className="container" style={{ marginBottom: "1rem" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: "0.75rem",
+              background: "linear-gradient(135deg, rgba(212, 175, 55, 0.12), rgba(255, 255, 255, 0.03))",
+              border: "1px solid rgba(212, 175, 55, 0.3)",
+              borderRadius: "12px",
+              padding: "0.75rem 1.25rem",
+              fontSize: "0.875rem",
+              color: "#e2e8f0",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              <span style={{ fontSize: "1.2rem" }}>✨</span>
+              <span>
+                <strong>Curated Demo Showcase:</strong> Sample high-resolution photography ready to browse, inspect, and favorite.
+              </span>
+            </div>
+            <button
+              className="btn btn-primary"
+              style={{ fontSize: "0.8rem", padding: "0.35rem 0.85rem" }}
+              onClick={() => setShowUpload(true)}
+            >
+              Upload Your Own
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ── Filter tabs + search ───────────────────────────────────────────── */}
       <div className="gallery-controls container">
@@ -112,7 +185,7 @@ export function GalleryPage() {
               className={`gallery-tab ${tab === t ? "gallery-tab--active" : ""}`}
               onClick={() => { setTab(t); setPage(1); }}
             >
-              {t === "all" ? "All Photos" : t === "favorites" ? "♥ Favorites" : "✦ AI Generated"}
+              {t === "all" ? "All Photos" : t === "favorites" ? "♥ Favorites" : "✦ AI Curated"}
             </button>
           ))}
         </div>
@@ -145,27 +218,19 @@ export function GalleryPage() {
       <div className="container">
         {isLoading && (
           <div className="gallery-loading">
-            {Array.from({ length: 12 }).map((_, i) => (
+            {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="gallery-skeleton shimmer" />
             ))}
           </div>
         )}
 
-        {isError && (
-          <div className="gallery-empty">
-            <span className="gallery-empty__icon">⚠️</span>
-            <h3>Failed to load images</h3>
-            <p>Check your connection and try again.</p>
-          </div>
-        )}
-
-        {!isLoading && !isError && images.length === 0 && (
+        {!isLoading && displayImages.length === 0 && (
           <div className="gallery-empty">
             <span className="gallery-empty__icon">{tab === "favorites" ? "♡" : "🖼️"}</span>
             <h3>{tab === "favorites" ? "No favorites yet" : search ? "No results found" : "Your gallery is empty"}</h3>
             <p>
               {tab === "favorites"
-                ? "Click the heart icon on any image to add it here."
+                ? "Click the heart icon on any photo to favorite it."
                 : search
                 ? `No images match "${search}".`
                 : "Upload your first image to get started."}
@@ -178,9 +243,9 @@ export function GalleryPage() {
           </div>
         )}
 
-        {!isLoading && images.length > 0 && (
+        {!isLoading && displayImages.length > 0 && (
           <div className="gallery-grid">
-            {images.map((img) => (
+            {displayImages.map((img) => (
               <ImageCard
                 key={img.id}
                 image={img}
@@ -227,7 +292,7 @@ export function GalleryPage() {
           onPrev={lightboxPrev}
           onNext={lightboxNext}
           hasPrev={lightboxIdx > 0}
-          hasNext={lightboxIdx < images.length - 1}
+          hasNext={lightboxIdx < displayImages.length - 1}
         />
       )}
     </div>

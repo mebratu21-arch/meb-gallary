@@ -1,18 +1,11 @@
 import { Router, type Request, type Response } from "express";
 import { prisma } from "../lib/prisma.js";
-import { requireAuth } from "../middleware/requireAuth.js";
+import { requireAdmin } from "../middleware/requireActiveAuth.js";
 import { logger } from "../lib/logger.js";
 
 export const adminRouter = Router();
 
-// ── Admin auth guard ──────────────────────────────────────────────────────────
-adminRouter.use(requireAuth, (req: Request, res: Response, next) => {
-  if (req.user!.role !== "ADMIN") {
-    res.status(403).json({ error: { code: "FORBIDDEN", message: "Admin access required." } });
-    return;
-  }
-  next();
-});
+adminRouter.use(requireAdmin);
 
 // ─── GET /api/admin/stats ─────────────────────────────────────────────────────
 adminRouter.get("/stats", async (_req: Request, res: Response) => {

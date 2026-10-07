@@ -1,12 +1,12 @@
 import { Router, type Request, type Response } from "express";
 import { prisma } from "../lib/prisma.js";
-import { requireAuth } from "../middleware/requireAuth.js";
+import { requireActiveAuth } from "../middleware/requireActiveAuth.js";
 import { logger } from "../lib/logger.js";
 
 export const albumsRouter = Router();
 
 // All album routes require authentication
-albumsRouter.use(requireAuth);
+albumsRouter.use(requireActiveAuth);
 
 // ─── GET /api/albums ──────────────────────────────────────────────────────────
 albumsRouter.get("/", async (req: Request, res: Response) => {
@@ -149,6 +149,14 @@ albumsRouter.post("/:id/images", async (req: Request, res: Response) => {
     const album = await (prisma as any).album.findFirst({ where: { id: req.params.id, userId } });
     if (!album) {
       res.status(404).json({ error: { code: "NOT_FOUND", message: "Album not found." } });
+      return;
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const image = await (prisma as any).image.findFirst({
+      where: { id: imageId, userId },
+    });
+    if (!image) {
+      res.status(404).json({ error: { code: "NOT_FOUND", message: "Image not found." } });
       return;
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

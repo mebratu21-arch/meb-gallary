@@ -9,6 +9,22 @@
 [![React](https://img.shields.io/badge/React-18.3-61DAFB?logo=react&logoColor=black)](https://react.dev/)
 [![Prisma](https://img.shields.io/badge/Prisma-5.19-2D3748?logo=prisma&logoColor=white)](https://www.prisma.io/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+---
+
+## 📸 Curated Demo Masterpiece Showcase
+
+Meb Gallery ships with an instant **zero-friction showcase experience** featuring six award-winning sample photographs out of the box with AI metadata, tags, and category indexing:
+
+| Masterpiece | Genre & Theme | Key Features & AI Metadata |
+| :--- | :--- | :--- |
+| 🏔️ **Alpine Dawn Over Misty Peaks** | Landscape & Nature | Snow-capped peaks, golden hour illumination, misty pine valleys |
+| 🌊 **Crystal Atoll Turquoise Lagoon** | Aerial & Ocean | Top-down coral reef perspective, turquoise lagoon clarity |
+| 🌃 **Neo-Tokyo Cyberpunk Boulevard** | Urban & Architecture | Rain-slicked asphalt reflections, neon glow, futuristic nightline |
+| ✨ **Golden Hour Studio Editorial** | Portrait & High Fashion | Warm rim lighting, dramatic studio chiaroscuro contrast |
+| 🌹 **Dewdrop Symphony on Crimson Velvet** | Botanical & Macro | Ultra-sharp water droplets, delicate velvet petal micro-textures |
+| 🌲 **Cathedral of Sunbeams in Redwoods** | Forest & Atmosphere | God rays filtering through ancient moss-draped redwood forest |
 
 ---
 

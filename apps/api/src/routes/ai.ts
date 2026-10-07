@@ -1,7 +1,8 @@
 import { Router, type Request, type Response } from "express";
 import { cloudinary } from "../lib/cloudinary.js";
 import { prisma } from "../lib/prisma.js";
-import { requireAuth } from "../middleware/requireAuth.js";
+import { requireActiveAuth } from "../middleware/requireActiveAuth.js";
+import { assertAllowedRemoteImageUrl } from "../lib/remoteUrl.js";
 import { logger } from "../lib/logger.js";
 import { analyzeImage, smartSearchFilter, generateImage } from "../lib/openai.js";
 
@@ -11,7 +12,7 @@ export const aiRouter = Router();
 // POST /api/ai/analyze/:imageId
 // Sends the Cloudinary URL to GPT-4o Vision, saves results to DB.
 // ─────────────────────────────────────────────────────────────────────────────
-aiRouter.post("/analyze/:imageId", requireAuth, async (req: Request, res: Response) => {
+aiRouter.post("/analyze/:imageId", requireActiveAuth, async (req: Request, res: Response) => {
   const userId = req.user!.sub;
   const { imageId } = req.params;
 
@@ -54,7 +55,7 @@ aiRouter.post("/analyze/:imageId", requireAuth, async (req: Request, res: Respon
 // AI converts the query to a safe filter → we build the DB query.
 // IMPORTANT: We NEVER execute raw AI-generated SQL.
 // ─────────────────────────────────────────────────────────────────────────────
-aiRouter.post("/search", requireAuth, async (req: Request, res: Response) => {
+aiRouter.post("/search", requireActiveAuth, async (req: Request, res: Response) => {
   const userId = req.user!.sub;
   const { query } = req.body as { query?: string };
 
@@ -101,7 +102,7 @@ aiRouter.post("/search", requireAuth, async (req: Request, res: Response) => {
 // Body: { prompt: "A futuristic city at sunset" }
 // Generates an image with DALL-E 3, stores permanently in Cloudinary + DB.
 // ─────────────────────────────────────────────────────────────────────────────
-aiRouter.post("/generate", requireAuth, async (req: Request, res: Response) => {
+aiRouter.post("/generate", requireActiveAuth, async (req: Request, res: Response) => {
   const userId = req.user!.sub;
   const { prompt } = req.body as { prompt?: string };
 
@@ -117,6 +118,7 @@ aiRouter.post("/generate", requireAuth, async (req: Request, res: Response) => {
   try {
     // 1. Generate from OpenAI (returns a temporary ~1hr URL)
     const tempUrl = await generateImage(prompt.trim());
+    assertAllowedRemoteImageUrl(tempUrl);
 
     // 2. Upload to Cloudinary for permanent CDN storage
     const cloudResult = await cloudinary.uploader.upload(tempUrl, {

@@ -1,4 +1,5 @@
 import axios, { type AxiosInstance, type InternalAxiosRequestConfig } from "axios";
+import type { AuthUser } from "@meb-gallery/shared";
 import { useAuthStore } from "../store/authStore.js";
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
@@ -54,9 +55,11 @@ apiClient.interceptors.response.use(
     isRefreshing = true;
 
     try {
-      const { data } = await apiClient.post<{ accessToken: string }>("/api/auth/refresh");
-      const { accessToken } = data;
-      useAuthStore.getState().setAccessToken(accessToken);
+      const { data } = await apiClient.post<{ accessToken: string; user: AuthUser }>(
+        "/api/auth/refresh",
+      );
+      const { accessToken, user } = data;
+      useAuthStore.getState().setAuth(accessToken, user);
       processQueue(accessToken);
       originalRequest.headers.Authorization = `Bearer ${accessToken}`;
       return apiClient(originalRequest);

@@ -16,6 +16,10 @@ export function RegisterPage() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
   const [loading, setLoading] = useState(false);
 
+  function handleGoogleLogin() {
+    window.location.href = "/api/auth/google";
+  }
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
@@ -133,7 +137,12 @@ export function RegisterPage() {
           </div>
 
           {/* OAuth */}
-          <button id="google-register-btn" className="btn btn-ghost auth-oauth" type="button">
+          <button
+            id="google-register-btn"
+            className="btn btn-ghost auth-oauth"
+            type="button"
+            onClick={handleGoogleLogin}
+          >
             <GoogleIcon />
             Continue with Google
           </button>

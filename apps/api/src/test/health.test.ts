@@ -18,6 +18,7 @@ vi.mock("../lib/redis.js", () => ({
     connect: vi.fn(),
     quit: vi.fn(),
     on: vi.fn(),
+    usesInMemoryFallback: false,
   },
 }));
 
