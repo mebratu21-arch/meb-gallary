@@ -13,18 +13,41 @@
 
 ---
 
+## 🖥️ Live Dashboard Preview
+
+<div align="center">
+  <img src="docs/assets/gallery-preview.png" alt="Meb Gallery Live Interface" width="100%" style="border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.4);" />
+  <p><em>Meb Gallery — Fluid responsive dark-mode UI with live photo grid, search filters, and AI metadata inspection.</em></p>
+</div>
+
+---
+
+## 💡 What is Meb Gallery? (Project Overview)
+
+**Meb Gallery** is an enterprise-ready, end-to-end full-stack digital asset management platform and AI-powered visual studio. Built from the ground up as a TypeScript monorepo, it unites high-performance media delivery, quantum-resistant session authentication, and automated multimodal computer vision into a cohesive, fluid web application.
+
+### 🎯 Key Problems Solved
+
+1. **Intelligent Media Discovery**: Instead of manually tagging hundreds of photos, the platform leverages **Google Gemini 1.5 Flash** (with **OpenAI GPT-4o-mini** fallback) to automatically generate descriptive captions, classify visual genres, and index search tags the moment a photo is uploaded.
+2. **Enterprise Session Security**: Traditional single-JWT auth setups are vulnerable to token theft. Meb Gallery implements short-lived in-memory access tokens (15m) paired with strictly rotated `httpOnly` refresh cookies (14d) and an O(1) indexed cryptographic token reuse detection family.
+3. **Optimized Global Delivery**: Raw full-resolution photos are streamed through Multer into **Cloudinary's CDN**, preserving quality while serving optimized, compressed WebP/JPEG formats to clients based on viewport and device constraints.
+4. **Resilient Local & Production Operation**: Works seamlessly with cloud PostgreSQL (**Neon**) and Redis, but includes resilient in-memory fallbacks so developers can clone, run, and test immediately without Docker or external daemon requirements.
+
+---
+
 ## 📸 Curated Demo Masterpiece Showcase
 
 Meb Gallery ships with an instant **zero-friction showcase experience** featuring six award-winning sample photographs out of the box with AI metadata, tags, and category indexing:
 
-| Masterpiece | Genre & Theme | Key Features & AI Metadata |
-| :--- | :--- | :--- |
-| 🏔️ **Alpine Dawn Over Misty Peaks** | Landscape & Nature | Snow-capped peaks, golden hour illumination, misty pine valleys |
-| 🌊 **Crystal Atoll Turquoise Lagoon** | Aerial & Ocean | Top-down coral reef perspective, turquoise lagoon clarity |
-| 🌃 **Neo-Tokyo Cyberpunk Boulevard** | Urban & Architecture | Rain-slicked asphalt reflections, neon glow, futuristic nightline |
-| ✨ **Golden Hour Studio Editorial** | Portrait & High Fashion | Warm rim lighting, dramatic studio chiaroscuro contrast |
-| 🌹 **Dewdrop Symphony on Crimson Velvet** | Botanical & Macro | Ultra-sharp water droplets, delicate velvet petal micro-textures |
-| 🌲 **Cathedral of Sunbeams in Redwoods** | Forest & Atmosphere | God rays filtering through ancient moss-draped redwood forest |
+| 🏔️ Alpine Dawn Over Misty Peaks | 🌊 Crystal Atoll Turquoise Lagoon | 🌃 Neo-Tokyo Cyberpunk Boulevard |
+| :---: | :---: | :---: |
+| <img src="apps/web/public/demo/mountains.jpg" width="280" alt="Alpine Dawn" style="border-radius: 8px;" /> | <img src="apps/web/public/demo/ocean.jpg" width="280" alt="Crystal Atoll" style="border-radius: 8px;" /> | <img src="apps/web/public/demo/city.jpg" width="280" alt="Neo-Tokyo" style="border-radius: 8px;" /> |
+| **Landscape & Nature**<br>_Golden hour alpine peaks and pine valley mist_ | **Aerial & Ocean**<br>_Overhead crystal turquoise coral reef sanctuary_ | **Urban & Architecture**<br>_Rain-slicked reflections and neon skyline_ |
+
+| ✨ Golden Hour Studio Editorial | 🌹 Dewdrop Symphony on Crimson Velvet | 🌲 Cathedral of Sunbeams in Redwoods |
+| :---: | :---: | :---: |
+| <img src="apps/web/public/demo/portrait.jpg" width="280" alt="Studio Editorial" style="border-radius: 8px;" /> | <img src="apps/web/public/demo/rose.jpg" width="280" alt="Dewdrop Macro" style="border-radius: 8px;" /> | <img src="apps/web/public/demo/forest.jpg" width="280" alt="Cathedral Redwoods" style="border-radius: 8px;" /> |
+| **Portrait & Fashion**<br>_Dramatic studio lighting and warm rim illumination_ | **Botanical & Macro**<br>_Ultra-sharp crystalline dew on velvet petals_ | **Forest & Atmosphere**<br>_God rays piercing ancient misty redwoods_ |
 
 ---
 
