@@ -169,13 +169,13 @@ export function LoginPage() {
           {/* Form */}
           <form className="auth-form" id="login-form" aria-label="Login form" onSubmit={handleSubmit}>
             <div className="form-group">
-              <label htmlFor="login-email" className="form-label">Email</label>
+              <label htmlFor="login-email" className="form-label">Email or Username</label>
               <input
                 id="login-email"
-                type="email"
+                type="text"
                 className="input"
-                placeholder="you@example.com"
-                autoComplete="email"
+                placeholder="admin@mebgallery.local or admin"
+                autoComplete="username"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}

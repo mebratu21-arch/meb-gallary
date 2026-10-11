@@ -113,8 +113,22 @@ authRouter.post("/login", async (req: Request, res: Response) => {
 
   const { email, password } = parsed.data;
 
-  const user = await prisma.user.findUnique({
-    where: { email, deletedAt: null },
+  // Normalize common shortcuts or username logins
+  let searchIdentifier = email.toLowerCase().trim();
+  if (searchIdentifier === "admin" || searchIdentifier === "admin@mebgallery") {
+    searchIdentifier = "admin@mebgallery.local";
+  } else if (searchIdentifier === "demo" || searchIdentifier === "demo@mebgallery") {
+    searchIdentifier = "demo@mebgallery.local";
+  }
+
+  const user = await prisma.user.findFirst({
+    where: {
+      OR: [
+        { email: { equals: searchIdentifier, mode: "insensitive" } },
+        { name: { equals: email.trim(), mode: "insensitive" } },
+      ],
+      deletedAt: null,
+    },
     select: { id: true, email: true, name: true, role: true, passwordHash: true },
   });
 

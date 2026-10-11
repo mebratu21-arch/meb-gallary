@@ -14,7 +14,7 @@ export type RegisterInput = z.infer<typeof registerSchema>;
 
 // ── Login ────────────────────────────────────────────────
 export const loginSchema = z.object({
-  email: z.string().trim().email("Please provide a valid email address (e.g. admin@mebgallery.local)"),
+  email: z.string().trim().min(1, "Email or username is required"),
   password: z.string().min(1, "Password is required"),
 });
 
