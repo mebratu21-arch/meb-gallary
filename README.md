@@ -272,8 +272,8 @@ cp .env.example .env
 | `CLOUDINARY_CLOUD_NAME`         | Cloudinary account cloud name                              | Optional | `your-cloud-name`                                               |
 | `CLOUDINARY_API_KEY`            | Cloudinary API access key                                  | Optional | `your-api-key`                                                  |
 | `CLOUDINARY_API_SECRET`         | Cloudinary API access secret                               | Optional | `your-api-secret`                                               |
-| `GEMINI_API_KEY`                | Google Gemini API key (recommended for AI features)        | Optional | `AIzaSy...`                                                     |
-| `OPENAI_API_KEY`                | OpenAI API key (alternative AI provider for Vision/DALL-E) | Optional | `sk-...`                                                        |
+| `GEMINI_API_KEY`                | Google Gemini API key (recommended for AI features)        | Optional | `your-gemini-api-key`                                           |
+| `OPENAI_API_KEY`                | OpenAI API key (alternative AI provider for Vision/DALL-E) | Optional | `your-openai-api-key`                                           |
 | `SEED_ADMIN_EMAIL`              | Default admin email for database seed script               |    No    | `admin@mebgallery.local`                                        |
 | `SEED_ADMIN_PASSWORD`           | Default admin password for seed script                     |    No    | `AdminPassword123!`                                             |
 | `SEED_DEMO_EMAIL`               | Default demo user email for seed script                    |    No    | `demo@mebgallery.local`                                         |
