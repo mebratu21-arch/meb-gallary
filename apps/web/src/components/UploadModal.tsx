@@ -60,8 +60,9 @@ export function UploadModal({ onClose }: Props) {
       await upload({ file, title: title.trim() || undefined, tags: tags.trim() || undefined });
       setSuccess(true);
       setTimeout(onClose, 800);
-    } catch {
-      setError("Upload failed. Check your Cloudinary settings and try again.");
+    } catch (err: unknown) {
+      const serverMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      setError(serverMsg ?? "Upload failed. Please try again.");
     }
   };
 

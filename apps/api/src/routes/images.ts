@@ -1,4 +1,7 @@
 import { Router, type Request, type Response } from "express";
+import fs from "node:fs";
+import path from "node:path";
+import { randomUUID } from "node:crypto";
 import multer from "multer";
 import type { UploadApiResponse } from "cloudinary";
 import { cloudinary } from "../lib/cloudinary.js";
@@ -77,18 +80,50 @@ imagesRouter.post(
     const tags = tagsRaw.split(",").map((t: string) => t.trim()).filter(Boolean);
 
     try {
-      const cloudResult = await uploadToCloudinary(req.file.buffer, `meb-gallery/${userId}`);
+      let publicId = "";
+      let url = "";
+      let format = req.file.mimetype.split("/")[1] ?? "jpeg";
+      let width = 1200;
+      let height = 800;
+      let bytes = req.file.size;
+
+      try {
+        const cloudResult = await uploadToCloudinary(req.file.buffer, `meb-gallery/${userId}`);
+        publicId = cloudResult.public_id;
+        url = cloudResult.secure_url;
+        format = cloudResult.format;
+        width = cloudResult.width;
+        height = cloudResult.height;
+        bytes = cloudResult.bytes;
+      } catch (cloudErr) {
+        logger.warn({ err: cloudErr }, "Cloudinary upload failed or disabled, falling back to resilient local storage");
+
+        const uploadsDir = path.resolve(process.cwd(), "public/uploads");
+        if (!fs.existsSync(uploadsDir)) {
+          fs.mkdirSync(uploadsDir, { recursive: true });
+        }
+
+        const ext = req.file.mimetype.split("/")[1] || "jpeg";
+        const filename = `${randomUUID()}.${ext}`;
+        const filePath = path.join(uploadsDir, filename);
+        fs.writeFileSync(filePath, req.file.buffer);
+
+        publicId = `local_${filename}`;
+        url = `/uploads/${filename}`;
+        format = ext;
+        bytes = req.file.buffer.length;
+      }
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const image = await (prisma as any).image.create({
         data: {
           userId,
-          publicId: cloudResult.public_id,
-          url: cloudResult.secure_url,
-          format: cloudResult.format,
-          width: cloudResult.width,
-          height: cloudResult.height,
-          bytes: cloudResult.bytes,
+          publicId,
+          url,
+          format,
+          width,
+          height,
+          bytes,
           title,
           description,
           tags,

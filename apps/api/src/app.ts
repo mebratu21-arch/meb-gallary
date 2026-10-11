@@ -3,6 +3,8 @@ import helmet from "helmet";
 import cors from "cors";
 import compression from "compression";
 import cookieParser from "cookie-parser";
+import fs from "node:fs";
+import path from "node:path";
 import { pinoHttp } from "pino-http";
 import { randomUUID } from "node:crypto";
 import { env } from "./config/env.js";
@@ -62,6 +64,13 @@ export function buildApp(): Express {
 
   // ── Cookie parsing ────────────────────────────────────────────────────────
   app.use(cookieParser());
+
+  // ── Static uploaded media (local fallback storage) ────────────────────────
+  const uploadsDir = path.resolve(process.cwd(), "public/uploads");
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+  app.use("/uploads", express.static(uploadsDir));
 
   // ── Routes ────────────────────────────────────────────────────────────────
   app.use("/", healthRouter);

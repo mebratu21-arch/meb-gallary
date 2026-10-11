@@ -16,6 +16,10 @@ out/
 !.env.example
 *.env
 
+# Uploads (local media fallback)
+public/uploads/
+apps/api/public/uploads/
+
 # Logs
 logs/
 *.log
