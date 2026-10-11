@@ -2,8 +2,8 @@ import { z } from "zod";
 
 // ── Register ─────────────────────────────────────────────
 export const registerSchema = z.object({
-  name: z.string().min(1, "Name is required").max(100),
-  email: z.string().email("Invalid email address"),
+  name: z.string().trim().min(1, "Name is required").max(100),
+  email: z.string().trim().email("Invalid email address"),
   password: z
     .string()
     .min(10, "Password must be at least 10 characters")
@@ -14,7 +14,7 @@ export type RegisterInput = z.infer<typeof registerSchema>;
 
 // ── Login ────────────────────────────────────────────────
 export const loginSchema = z.object({
-  email: z.string().email("Invalid email address"),
+  email: z.string().trim().email("Please provide a valid email address (e.g. admin@mebgallery.local)"),
   password: z.string().min(1, "Password is required"),
 });
 

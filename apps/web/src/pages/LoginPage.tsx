@@ -47,19 +47,45 @@ export function LoginPage() {
     window.location.href = "/api/auth/google";
   }
 
+  function handleFillCredentials(demoEmail: string, demoPass: string) {
+    setEmail(demoEmail);
+    setPassword(demoPass);
+    setError(null);
+  }
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
     setLoading(true);
 
     try {
-      const { data } = await apiClient.post<AuthResponse>("/api/auth/login", { email, password });
+      const cleanEmail = email.trim();
+      const { data } = await apiClient.post<AuthResponse>("/api/auth/login", {
+        email: cleanEmail,
+        password,
+      });
       setAuth(data.accessToken, data.user);
       navigate(from, { replace: true });
     } catch (err: unknown) {
+      const errResponse = (err as {
+        response?: {
+          data?: {
+            error?: {
+              message?: string;
+              details?: Record<string, string[]>;
+            };
+          };
+        };
+      })?.response?.data?.error;
+
+      const detailsMessage = errResponse?.details
+        ? Object.values(errResponse.details).flat().join(" ")
+        : null;
+
       const message =
-        (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error
-          ?.message ?? "Login failed. Please try again.";
+        detailsMessage ??
+        errResponse?.message ??
+        "Login failed. Please check your credentials.";
       setError(message);
     } finally {
       setLoading(false);
@@ -85,6 +111,60 @@ export function LoginPage() {
               {error}
             </div>
           )}
+
+          {/* Quick Demo Credentials Autofill */}
+          <div
+            style={{
+              background: "rgba(201, 168, 76, 0.08)",
+              border: "1px dashed rgba(201, 168, 76, 0.4)",
+              borderRadius: "var(--radius-md)",
+              padding: "12px 14px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "8px",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ color: "var(--gold)", fontWeight: 600, fontSize: "12px" }}>
+                ⚡ Demo Credentials
+              </span>
+              <span style={{ color: "var(--text-muted)", fontSize: "11px" }}>
+                Click to autofill
+              </span>
+            </div>
+            <div style={{ display: "flex", gap: "8px" }}>
+              <button
+                type="button"
+                className="btn btn-ghost"
+                style={{
+                  flex: 1,
+                  padding: "6px 8px",
+                  fontSize: "12px",
+                  border: "1px solid rgba(255, 255, 255, 0.12)",
+                }}
+                onClick={() =>
+                  handleFillCredentials("admin@mebgallery.local", "AdminPassword123!")
+                }
+              >
+                👑 Admin
+              </button>
+              <button
+                type="button"
+                className="btn btn-ghost"
+                style={{
+                  flex: 1,
+                  padding: "6px 8px",
+                  fontSize: "12px",
+                  border: "1px solid rgba(255, 255, 255, 0.12)",
+                }}
+                onClick={() =>
+                  handleFillCredentials("demo@mebgallery.local", "DemoPassword123!")
+                }
+              >
+                👤 Demo User
+              </button>
+            </div>
+          </div>
 
           {/* Form */}
           <form className="auth-form" id="login-form" aria-label="Login form" onSubmit={handleSubmit}>

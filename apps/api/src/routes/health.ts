@@ -4,6 +4,25 @@ import { redis } from "../lib/redis.js";
 
 export const healthRouter = Router();
 
+/** GET / — API root metadata */
+healthRouter.get("/", (_req: Request, res: Response) => {
+  res.json({
+    name: "Meb Gallery API",
+    status: "ok",
+    version: "0.0.1",
+    endpoints: {
+      health: "/health",
+      ready: "/ready",
+      auth: "/api/auth",
+      images: "/api/images",
+      albums: "/api/albums",
+      ai: "/api/ai",
+      admin: "/api/admin",
+    },
+    frontend: "http://localhost:5173",
+  });
+});
+
 /** GET /health — always 200 */
 healthRouter.get("/health", (_req: Request, res: Response) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
